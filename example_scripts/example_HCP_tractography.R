@@ -1,55 +1,42 @@
 ###HCP data analysis: Step 2 (cont'd):  tractography
 #take the peak detection results as input
 
-##need to first install Rpackage: dmri.tracking_1.01.tar.gz in fold /dmri.tracking-r
+##need to first install Rpackage: 
+# install.packages("devtools")
+devtools::install_github("vic-dragon/dmri.tracking")
 
 ##load packages
 library(R.matlab)
-library(dmri.tracking)
 library(rgl)
+library(dmri.tracking)
 
-data_path = '/Users/seungyong/Dropbox/FDD_estimation/codes/BJS/data/'
+data_path = '/your/path/to/BJS/data/'
 ##load peak detection results from "example_HCP.py"
 file_name= paste0(data_path,"peak.mat")
 peak_result= readMat(file_name) #read matlab data into R
 
 ##format the peak detection results for the tracking algorithm
-form_tractography<-function(result){
-  temp<-NULL
-  temp$braingrid<-result$braingrid
-  temp$loc<-result$loc
-  temp$map<-c(result$map)
-  temp$n.fiber<-c(result$n.fiber)
-  temp$n.fiber2<-c(result$n.fiber2)
-  temp$nn1<-c(result$nn1)
-  temp$nn2<-c(result$nn2)
-  temp$nn3<-c(result$nn3)
-  temp$rmap<-c(result$rmap)
-  temp$vec<-result$vec
-  temp$xgrid.sp<-c(result$xgrid.sp)
-  temp$ygrid.sp<-c(result$ygrid.sp)
-  temp$zgrid.sp<-c(result$zgrid.sp)
-  
-  return(temp)
-}
+v.obj<-NULL
+v.obj$vec<-peak_result$vec
+v.obj$loc<-peak_result$loc
+v.obj$map<-c(peak_result$map)
+v.obj$rmap<-c(peak_result$rmap)
+v.obj$n.fiber<-c(peak_result$n.fiber)
+v.obj$n.fiber2<-c(peak_result$n.fiber2)
+v.obj$braingrid<-peak_result$braingrid
+v.obj$xgrid.sp<-peak_result$xgrid.sp
+v.obj$ygrid.sp<-peak_result$ygrid.sp
+v.obj$zgrid.sp<-peak_result$zgrid.sp
 
-temp = form_tractography(peak_result)
-## specify region to draw the tracking results
-x_subr = 1:temp$nn1
-y_subr = 1:temp$nn2
-z_subr = 1:temp$nn3
 
 ## Apply Tracking Algorithm  
 # It takaes 20 min on 2020 mac 16inch
 # If you want to skip this step, you can load the attached Rdata file (tracts_SLF_L.Rdata)
 
-nproj = 1  ## skip nproj voxles before termination
-tracts <- v.track(v.obj=temp, xgrid.sp=temp$xgrid.sp, ygrid.sp=temp$ygrid.sp,
-                     zgrid.sp=temp$zgrid.sp, braingrid=array(temp$braingrid,dim=c(3,length(x_subr),length(y_subr),length(z_subr))), elim=T, nproj=nproj,
-                     vorient=c(1,1,1), elim.thres=10, max.line=500) 
+tracts <- v.track(v.obj,  max.line=500, elim.thres=10) 
 # elim.tresh:  return indices of tracks of at least elim.thres length: use this information for quicker plotting
 
-save(tracts, file=paste0(data_path,'tracts_SLF_L.Rdata'))
+#save(tracts, file=paste0(data_path,'tracts_SLF_L.Rdata'))
 #load(paste0(data_path,'tracts_SLF_L.Rdata'))
 
 ###Streamline Selection based on predefined streamline selection masks
@@ -69,7 +56,6 @@ for(iind in (tracts$sorted.iinds[tracts$sorted.update.ind])){
     iind_store<-c(iind_store, iind)
   }
 }
-
 
 ## plot the tractography results (the selected streamlines) 
 open3d()

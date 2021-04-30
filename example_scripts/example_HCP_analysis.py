@@ -1,5 +1,5 @@
 import os
-path = '/Users/seungyong/Dropbox/FDD_estimation/codes/BJS/python/'
+path = '/your/path/to/BJS/python/'
 os.chdir(path)
 
 #%%
@@ -21,7 +21,7 @@ from fod_estimation import *
 from dwi_simulation import *
 
 #%%
-data_path = '/Users/seungyong/Dropbox/FDD_estimation/codes/BJS/data/'
+data_path = '/your/path/to/BJS/data/'
 
 #%% Load dwi image and gradient directions and bvalues information : load image takes time
 org_bvecs = np.loadtxt(data_path+'bvecs')  # gradient directions along which DWI signals are measured
