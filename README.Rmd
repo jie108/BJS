@@ -8,6 +8,80 @@ output: md_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+
+## Codebase and Software Requirements
+
+### Codebase descriptions
+
+Codebase is maintained in the [**git repository**](https://github.com/vic-dragon/BJS).
+
+**Data**: in  */data* folder: 
+
+- D-MRI data:
+  - *SLF_L_data.nii.gz*: Synthetic image for *SLF* in the left hemisphere (original signals with artificially added small noises)
+  - *bvals*: b-values
+  - *bvecs*: gradient directions
+  
+- Tractography masks:
+  - *SLF_L.nii.gz*, *SLF_R.nii.gz*: Masks of ROI (*Superior Longitudinal Fasciculus* in each hemisphere) from *JHU probabilistic white matter tractography atlas*.
+  - *SLF_L_seed.nii.gz*, *SLF_R_seed.nii.gz*, *SLF_L_target.nii.gz*, *SLF_R_target.nii.gz*: Streamline selection masks of *SLF* from *AutoPtx*.
+
+
+- Extracted peaks of estimated FODs: Inputs for the tracking algorithm
+  - *peaks.mat*  
+
+**Example scripts**: in */example_scripts* folder: 
+
+- *example_simulation_fib2.py*: Simulation example -- true FOD has two peaks
+- *example_simulation_fib3.py*: Simulation example -- true FOD has three peaks
+- *example_plot_fod.m*: Matlab script to plot estimated FOD 
+
+- *example_HCP_dMRI_download_preprocess.R*: HCP application -- download and preprocess D-MRI data
+- *example_HCP_analysis.py*: HCP application -- FOD estimation and peak detection
+  - Input: *bvals*, *bvecs*, *SLF_L_data.nii.gz*
+  - Output: *peaks.mat*
+
+- *example_HCP_tractography.R*: HCP application -- tractography by *DiST* algorithm
+  - Input: *peaks.mat*
+  - Output: tractography results 
+  
+  
+**Python functions**: in */python* folder: 
+
+- *dwi_simulation.py*: Functions for simulating D-MRI signals and evaluation of simulation results of FOD estimation.
+- *fod_estimation.py*: Functions for the three FOD estimation methods *BJS*, *SHridge* and *superCSD*.
+- *fod_HCP_application.py*: Functions for HCP data processing including: (i) Estimation of response function parameters; (ii) ROI information organization; (iii) Gradient direction extraction according to b-value groups
+- *FOD_peak.py*: Functions for the peak detection algorithm
+- *sphere_harmonic.py*: Functions to evaluate the spherical harmonic basis on equal-angular spherical grid
+- *sphere_mesh.py*: Functions for equal-angular sampling schemes on the sphere
+
+**Matlab functions**: in */matlab* folder:
+
+* *fod_plotting.m*: Functions for plotting (estimated) FOD 
+
+**R package**: in */dmri.tracking-r*
+
+- *dmri.tracking_0.1.0.tar.gz*: R package for the *DiST* tractography algorithm.
+
+
+
+#### Software requirements
+
+* **R**(version 3.6.2)
+  - required R packages: rgl, R.matlab, dmri.tracking, neurohcp, fslr
+* **python3**(3.7.6)
+  - required python3 packages: numpy, scipy, tqdm, nibabel, warnings
+* **FSL**(version 6.0.3): 
+  - also include **FSLeyes**
+* **Xquartz** (version 2.7.11): 
+  - needed for **FSL**
+* **matlab**(R2017a): 
+  - only needed for plotting (estimated) FOD  
+
+
+
+
 ## Section 1: Overview
 In this document, we briefly describe the HCP D-MRI data and the steps to download D-MRI data from HCP database, the D-MRI data preprocessing, FOD estimation, tractography and feature extraction. 
 
@@ -296,7 +370,7 @@ Moreover, binary masks (1 -- white color) from  [*AutoPtx*](https://fsl.fmrib.ox
 
 
 
-![**SLF masks on template space (left) and native space (right)**: The probabilisitc masks are shown by the heatmap where brigher color corresponds to higher probability; The binary masks are shown by the white-colored strips.](SLF_registration.png)
+![**SLF masks on template space (left) and native space (right)**: The probabilisitc masks are shown by the heatmap where brigher color corresponds to higher probability; The binary masks are shown by the white-colored strips.](man/SLF_registration.png)
 
 
 Using **FSLeyes** and [**FSL** atlases and templates](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Atlases) to create masks is illustrated in the Appendix A.1. 
@@ -340,13 +414,13 @@ A potential disadvantage of a *regional-seeding* approach is to  have incomplete
 One common criterion for streamline selection is to only retain tracks longer than a certain length (a commonly used threshold is 10mm).  The rationale is that shorter tracks are unreliable. Moreover, as can be seen from the *orientation color map* below, the *SLF* region crosses with the corticospinal tract (indicated by blue-color). As a result, the reconstructed  fibers contain not only those of *SLF*, but also some of *CST*. 
 
 
-![**FA corrected orientation color map on native space of one HCP subject:** The (probabilistic)  *SLF* mask on the left-hemisphere is outlined by white-colored lines. Left panel: saggital view at MNI X = -38; Right panel: axial view at MNI  Z = 30.](SLF_L_colormap.png)
+![**FA corrected orientation color map on native space of one HCP subject:** The (probabilistic)  *SLF* mask on the left-hemisphere is outlined by white-colored lines. Left panel: saggital view at MNI X = -38; Right panel: axial view at MNI  Z = 30.](man/SLF_L_colormap.png)
 
 To better dissect SLF  from the initial tractography results, we used binary masks from [*AutoPtx*](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/AutoPtx) to conduct streamline selection where only tracks (streamlines) that pass through  *AutoPtx* binary masks at both ends are retained. 
 The  plot below  shows *SLF* reconstruction (after streamline selection) of one HCP subject, using *whole-brain-seeding* (left panel), *whole-brain-seeding* with the white matter mask (middle panel) and *regional-seeding* with the white matter mask (right panel). As can be seen there, the tractography results are visually similar and  *regional-seeding* does not lose too many tracks.
 
 
-![***SLF* reconstruction of one HCP subject with streamline seleciton (*AutoPtx* masks)**: Left panel: *whole-brain-seeding* results; Middle panel: *whole-brain-seeding* with white matter mask; Right panel: *regional-seeding* with white matter mask](SLF_tractography.png)
+![***SLF* reconstruction of one HCP subject with streamline seleciton (*AutoPtx* masks)**: Left panel: *whole-brain-seeding* results; Middle panel: *whole-brain-seeding* with white matter mask; Right panel: *regional-seeding* with white matter mask](man/SLF_tractography.png)
 
 
 
@@ -387,75 +461,4 @@ Settings -> Ortho View 1 -> Atlas Panel
 
 ![](man/roi3.png)
 
-
-### Section A.2: Codebase and Software Requirements
-
-
-
-#### Codebase descriptions
-
-Codebase is maintained in the [**git repository**](https://github.com/vic-dragon/BJS).
-
-**Data**: in  */data* folder: 
-
-- D-MRI data:
-  - *SLF_L_data.nii.gz*: Synthetic image for *SLF* in the left hemisphere (original signals with artificially added small noises)
-  - *bvals*: b-values
-  - *bvecs*: gradient directions
-  
-- Tractography masks:
-  - *SLF_L.nii.gz*, *SLF_R.nii.gz*: Masks of ROI (*Superior Longitudinal Fasciculus* in each hemisphere) from *JHU probabilistic white matter tractography atlas*.
-  - *SLF_L_seed.nii.gz*, *SLF_R_seed.nii.gz*, *SLF_L_target.nii.gz*, *SLF_R_target.nii.gz*: Streamline selection masks of *SLF* from *AutoPtx*.
-
-
-- Extracted peaks of estimated FODs: Inputs for the tracking algorithm
-  - *peaks.mat*  
-
-**Example scripts**: in */example_scripts* folder: 
-
-- *example_simulation_fib2.py*: Simulation example -- true FOD has two peaks
-- *example_simulation_fib3.py*: Simulation example -- true FOD has three peaks
-- *example_plot_fod.m*: Matlab script to plot estimated FOD 
-
-- *example_HCP_dMRI_download_preprocess.R*: HCP application -- download and preprocess D-MRI data
-- *example_HCP_analysis.py*: HCP application -- FOD estimation and peak detection
-  - Input: *bvals*, *bvecs*, *SLF_L_data.nii.gz*
-  - Output: *peaks.mat*
-
-- *example_HCP_tractography.R*: HCP application -- tractography by *DiST* algorithm
-  - Input: *peaks.mat*
-  - Output: tractography results 
-  
-  
-**Python functions**: in */python* folder: 
-
-- *dwi_simulation.py*: Functions for simulating D-MRI signals and evaluation of simulation results of FOD estimation.
-- *fod_estimation.py*: Functions for the three FOD estimation methods *BJS*, *SHridge* and *superCSD*.
-- *fod_HCP_application.py*: Functions for HCP data processing including: (i) Estimation of response function parameters; (ii) ROI information organization; (iii) Gradient direction extraction according to b-value groups
-- *FOD_peak.py*: Functions for the peak detection algorithm
-- *sphere_harmonic.py*: Functions to evaluate the spherical harmonic basis on equal-angular spherical grid
-- *sphere_mesh.py*: Functions for equal-angular sampling schemes on the sphere
-
-**Matlab functions**: in */matlab* folder:
-
-* *fod_plotting.m*: Functions for plotting (estimated) FOD 
-
-**R package**: in */dmri.tracking-r*
-
-- *dmri.tracking_0.1.0.tar.gz*: R package for the *DiST* tractography algorithm.
-
-
-
-#### Software requirements
-
-* **R**(version 3.6.2)
-  - required R packages: rgl, R.matlab, dmri.tracking, neurohcp, fslr
-* **python3**(3.7.6)
-  - required python3 packages: numpy, scipy, tqdm, nibabel, warnings
-* **FSL**(version 6.0.3): 
-  - also include **FSLeyes**
-* **Xquartz** (version 2.7.11): 
-  - needed for **FSL**
-* **matlab**(R2017a): 
-  - only needed for plotting (estimated) FOD  
 
