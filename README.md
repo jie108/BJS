@@ -1,6 +1,8 @@
 Codebase and Software Requirements
 ----------------------------------
 
+##### Maintainer: Seungyong Hwang (<a href="mailto:syhwang@ucdavis.edu" class="email">syhwang@ucdavis.edu</a>)
+
 ### Codebase descriptions
 
 Codebase is maintained in the [**git
@@ -72,7 +74,16 @@ repository**](https://github.com/vic-dragon/BJS).
 **R package**: in */dmri.tracking-r*
 
 -   *dmri.tracking\_0.1.0.tar.gz*: R package for the *DiST* tractography
-    algorithm.
+    algorithm. (see [github
+    repository](https://github.com/vic-dragon/dmri.tracking))
+
+You can install the development version with:
+
+    devtools::install_github("vic-dragon/dmri.tracking") 
+
+If the above command does not work, try the following command
+
+    remotes::install_github("vic-dragon/dmri.tracking@main")
 
 #### Software requirements
 
@@ -87,6 +98,9 @@ repository**](https://github.com/vic-dragon/BJS).
     -   needed for **FSL**
 -   **matlab**(R2017a):
     -   only needed for plotting (estimated) FOD
+
+HCP D-MRI data analysis pipeline
+================================
 
 Section 1: Overview
 -------------------

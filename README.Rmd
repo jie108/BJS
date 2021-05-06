@@ -10,7 +10,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+
 ## Codebase and Software Requirements
+
+##### Maintainer: Seungyong Hwang (syhwang@ucdavis.edu)
 
 ### Codebase descriptions
 
@@ -62,7 +65,18 @@ Codebase is maintained in the [**git repository**](https://github.com/vic-dragon
 
 **R package**: in */dmri.tracking-r*
 
-- *dmri.tracking_0.1.0.tar.gz*: R package for the *DiST* tractography algorithm.
+- *dmri.tracking_0.1.0.tar.gz*: R package for the *DiST* tractography algorithm. (see [github repository](https://github.com/vic-dragon/dmri.tracking))
+
+You can install the development version with:
+
+``` r
+devtools::install_github("vic-dragon/dmri.tracking") 
+```
+
+If the above command does not work, try the following command
+```r
+remotes::install_github("vic-dragon/dmri.tracking@main")
+```
 
 
 
@@ -81,6 +95,7 @@ Codebase is maintained in the [**git repository**](https://github.com/vic-dragon
 
 
 
+# HCP D-MRI data analysis pipeline
 
 ## Section 1: Overview
 In this document, we briefly describe the HCP D-MRI data and the steps to download D-MRI data from HCP database, the D-MRI data preprocessing, FOD estimation, tractography and feature extraction. 
