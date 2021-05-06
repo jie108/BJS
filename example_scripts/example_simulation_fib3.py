@@ -1,14 +1,12 @@
 """
-Purpose: Example for Simulation (2 fiber case)
+Purpose: Example for Simulation (3 fiber case)
 @author: Seungyong (30 Jan 2020)
 """
-
-#%% Setup 
-
 #%% Set working directory
 import os
 
-path = 'python script path'
+path = '/your/path/to/BJS/python'
+
 os.chdir(path)
 
 # import built in Packages
@@ -29,7 +27,7 @@ from dwi_simulation import *
 weight = [0.33, 0.33, 0.34] #weight for each fiber 
 num_fib = len(weight)
 
-test_degree = 60 # separation angle  (60 or 90)
+test_degree = 90 # separation angle  (60 or 90)
 ratio = 10 #response function: ratio between the first eigenvalue and the avarage of the second and the third eigenvalues in the tensor. 
 
 # Parameters for DWI generation and level of  SH basis used in the methods
@@ -124,7 +122,7 @@ for i in range(dis.shape[0]):
     
     
 #%% Apply the methods to the simulated DWI data
-# arrayes to store results 
+# array to store results 
 store_est_fod_bjs = np.zeros((SHP.shape[0],rep)) #For FOD estimation
 store_est_fod_shridge = np.zeros((SHP.shape[0],rep))
 store_est_fod_superCSD = np.zeros((SHP.shape[0],rep))
@@ -147,10 +145,22 @@ store_est_sep2_superCSD = []
 store_est_sep3_superCSD = []
 
 
-#% perform estimation 
+store_peak1_err_bjs = []
+store_peak2_err_bjs = []
+store_peak3_err_bjs = []
+
+store_peak1_err_shridge = []
+store_peak2_err_shridge = []
+store_peak3_err_shridge = []
+
+store_peak1_err_superCSD = []
+store_peak2_err_superCSD = []
+store_peak3_err_superCSD = []
+
+#%% perform estimation 
 for i in tqdm.tqdm(range(rep), desc="FOD estimation(BJS)"): # ith replicate 
     #BJS
-    store_est_fod_bjs[:,i] = BJS(dwi[:,i], SH, SHD, SHP, R, mu1, mu2, muinf, lmax)
+    store_est_fod_bjs[:,i] = BJS(dwi[:,i], SH, SHD, SHP, R, mu1, mu2, muinf, lmax, t=2/4)
 
 
 for i in tqdm.tqdm(range(rep), desc="FOD estimation(SHridge)"): # ith replicate 
@@ -160,8 +170,8 @@ for i in tqdm.tqdm(range(rep), desc="FOD estimation(SHridge)"): # ith replicate
 
 for i in tqdm.tqdm(range(rep), desc="FOD estimation(superCSD)"): # ith replicate 
     #SCSD: take the SHRidge estimator as initial 
-    store_est_fod_superCSD[:,i] = superCSD(dwi[:,i], SH, SHD, SHP, R, store_est_fod_coeff_shridge[:,i])
-    
+    store_est_fod_superCSD[:,i] = superCSD(dwi[:,i], SH, SHD, SHP, R, store_est_fod_coeff_shridge[:15,i])
+
 for i in tqdm.tqdm(range(rep), desc="Peak Detection:"): 
     #peak detection 
     num_fib_shridge, fib_loc_shridge = FOD_Peak(store_est_fod_shridge[:,i], idx, nbhd, thresh, degree, pos_dense, sampling_index_dense_half, True, peak_cut)
@@ -175,25 +185,35 @@ for i in tqdm.tqdm(range(rep), desc="Peak Detection:"):
 
     #get and record separation angle estimation  
     if (num_fib_shridge == num_fib):
-        est_sep1_shridge, est_sep2_shridge, est_sep3_shridge = fib3_sep_angle(fib3_pos1, fib3_pos2, fib3_pos3, fib_loc_shridge[:,0], fib_loc_shridge[:,1], fib_loc_shridge[:,2])
+        est_sep1_shridge, est_sep2_shridge, est_sep3_shridge, peak1_err_shridge, peak2_err_shridge, peak3_err_shridge = fib3_sep_angle(fib3_pos1, fib3_pos2, fib3_pos3, fib_loc_shridge[:,0], fib_loc_shridge[:,1], fib_loc_shridge[:,2])
         store_est_sep1_shridge.append(est_sep1_shridge)
         store_est_sep2_shridge.append(est_sep2_shridge)        
         store_est_sep3_shridge.append(est_sep3_shridge)
         
+        store_peak1_err_shridge.append(peak1_err_shridge)
+        store_peak2_err_shridge.append(peak2_err_shridge)
+        store_peak3_err_shridge.append(peak3_err_shridge)
+        
     if (num_fib_superCSD == num_fib):
-        est_sep1_superCSD, est_sep2_superCSD, est_sep3_superCSD = fib3_sep_angle(fib3_pos1, fib3_pos2, fib3_pos3, fib_loc_superCSD[:,0], fib_loc_superCSD[:,1], fib_loc_superCSD[:,2])
+        est_sep1_superCSD, est_sep2_superCSD, est_sep3_superCSD, peak1_err_superCSD, peak2_err_superCSD , peak3_err_superCSD = fib3_sep_angle(fib3_pos1, fib3_pos2, fib3_pos3, fib_loc_superCSD[:,0], fib_loc_superCSD[:,1], fib_loc_superCSD[:,2])
         store_est_sep1_superCSD.append(est_sep1_superCSD)
         store_est_sep2_superCSD.append(est_sep2_superCSD)        
         store_est_sep3_superCSD.append(est_sep3_superCSD)
         
+        store_peak1_err_superCSD.append(peak1_err_superCSD)
+        store_peak2_err_superCSD.append(peak2_err_superCSD)        
+        store_peak3_err_superCSD.append(peak3_err_superCSD)
+        
     if (num_fib_bjs == num_fib):
-        est_sep1_bjs, est_sep2_bjs, est_sep3_bjs = fib3_sep_angle(fib3_pos1, fib3_pos2, fib3_pos3, fib_loc_bjs[:,0], fib_loc_bjs[:,1], fib_loc_bjs[:,2])
+        est_sep1_bjs, est_sep2_bjs, est_sep3_bjs, peak1_err_bjs, peak2_err_bjs, peak3_err_bjs  = fib3_sep_angle(fib3_pos1, fib3_pos2, fib3_pos3, fib_loc_bjs[:,0], fib_loc_bjs[:,1], fib_loc_bjs[:,2])
         store_est_sep1_bjs.append(est_sep1_bjs)
         store_est_sep2_bjs.append(est_sep2_bjs)        
         store_est_sep3_bjs.append(est_sep3_bjs)
 
+        store_peak1_err_bjs.append(peak1_err_bjs)
+        store_peak2_err_bjs.append(peak1_err_bjs)
+        store_peak3_err_bjs.append(peak1_err_bjs)
 
-#%%
 #%% Evaluation 
 #BJS:         
 correct_bjs = len(np.where(store_num_fib_bjs == num_fib)[0]) #percentage of correct peak detection
@@ -212,27 +232,36 @@ over_superCSD = len(np.where(store_num_fib_superCSD > num_fib)[0])
 
 
 #show results on screen : add an if to deal with 0% success rate; print the setting as in the tables
-print("J: {}, lmax: {}, lmax_update:{}, SNR:{}, b-value:{}s/mm^2 ".format(J, lmax, lmax_update, 1/sigma, b*1000))
+print("J: {}, lmax: {}, lmax_update:{}, SNR:{}, b-value:{}s/mm^2 ".format(J, lmax, lmax_update, 1/sigma, b))
 if (correct_bjs != 0):
-    print("BJS: D.R {:.2f}, sep1_mean(s.e.) {:.3f}({:.3f}), sep2_mean(s.e.) {:.3f}({:.3f}), sep3_mean(s.e.) {:.3f}({:.3f})".format(
-            correct_bjs/rep, np.mean(store_est_sep1_bjs), np.std(store_est_sep1_bjs)/np.sqrt(correct_bjs), np.mean(store_est_sep2_bjs), np.std(store_est_sep2_bjs)/np.sqrt(correct_bjs), np.mean(store_est_sep3_bjs), np.std(store_est_sep3_bjs)/np.sqrt(correct_bjs)))
+    print("BJS: D.R {:.2f}, Bias.Sep1(s.e.) {:.3f}({:.3f}), Bias.Sep2(s.e.) {:.3f}({:.3f}), Bias.Sep3(s.e.) {:.3f}({:.3f}), RMSAE {:.3f}".format(
+            correct_bjs/rep, np.mean(store_est_sep1_bjs)-test_degree, np.std(store_est_sep1_bjs)/np.sqrt(correct_bjs), 
+            np.mean(store_est_sep2_bjs)-test_degree, np.std(store_est_sep2_bjs)/np.sqrt(correct_bjs), 
+            np.mean(store_est_sep3_bjs)-test_degree, np.std(store_est_sep3_bjs)/np.sqrt(correct_bjs),
+            np.mean(np.array(store_peak1_err_bjs)**2 + np.array(store_peak2_err_bjs)**2 + np.array(store_peak3_err_bjs)**2)**(0.5)))
 else:
-    print("BJS: D.R 0, sep1_mean(s.e.) - (-), sep2_mean(s.e.) - (-), sep3_mean(s.e.) - (-)")
+    print("BJS: D.R 0, Bias.Sep1(s.e.) - (-), Bias.Sep2(s.e.) - (-), Bias.Sep3(s.e.) - (-), RMSAE -")
     
 if (correct_superCSD != 0):
-    print("superCSD: D.R {:.2f}, sep1_mean(s.e.) {:.3f}({:.3f}), sep2_mean(s.e.) {:.3f}({:.3f}), sep3_mean(s.e.) {:.3f}({:.3f})".format(
-            correct_superCSD/rep, np.mean(store_est_sep1_superCSD), np.std(store_est_sep1_superCSD)/np.sqrt(correct_superCSD), np.mean(store_est_sep2_superCSD), np.std(store_est_sep2_superCSD)/np.sqrt(correct_superCSD), np.mean(store_est_sep3_superCSD), np.std(store_est_sep3_superCSD)/np.sqrt(correct_superCSD)))
+    print("superCSD: D.R {:.2f}, Bias.Sep1(s.e.) {:.3f}({:.3f}), Bias.Sep2(s.e.) {:.3f}({:.3f}), Bias.Sep3(s.e.) {:.3f}({:.3f}), RMSAE {:.3f}".format(
+            correct_superCSD/rep, np.mean(store_est_sep1_superCSD)-test_degree, np.std(store_est_sep1_superCSD)/np.sqrt(correct_superCSD), 
+            np.mean(store_est_sep2_superCSD)-test_degree, np.std(store_est_sep2_superCSD)/np.sqrt(correct_superCSD), 
+            np.mean(store_est_sep3_superCSD)-test_degree, np.std(store_est_sep3_superCSD)/np.sqrt(correct_superCSD),
+            np.mean(np.array(store_peak1_err_superCSD)**2 + np.array(store_peak2_err_superCSD)**2 + np.array(store_peak3_err_superCSD)**2)**(0.5)))
 else:
-    print("superCSD: D.R 0, sep1_mean(s.e.) - (-), sep2_mean(s.e.) - (-), sep3_mean(s.e.) - (-)")
+    print("superCSD: D.R 0, Bias.Sep1(s.e.) - (-), Bias.Sep2(s.e.) - (-), Bias.Sep3(s.e.) - (-), RMSAE -")
     
 if (correct_shridge != 0):
-    print("SHridge: D.R {:.2f}, sep1_mean(s.e.) {:.3f}({:.3f}), sep2_mean(s.e.) {:.3f}({:.3f}), sep3_mean(s.e.) {:.3f}({:.3f})".format(
-            correct_shridge/rep, np.mean(store_est_sep1_shridge), np.std(store_est_sep1_shridge)/np.sqrt(correct_shridge), np.mean(store_est_sep2_shridge), np.std(store_est_sep2_shridge)/np.sqrt(correct_shridge), np.mean(store_est_sep3_shridge), np.std(store_est_sep3_shridge)/np.sqrt(correct_shridge)))
+    print("SHridge: D.R {:.2f}, Bias.Sep1(s.e.) {:.3f}({:.3f}), Bias.Sep2(s.e.) {:.3f}({:.3f}), Bias.Sep3(s.e.) {:.3f}({:.3f}), RMSAE {:.3f}".format(
+            correct_shridge/rep, np.mean(store_est_sep1_shridge)-test_degree, np.std(store_est_sep1_shridge)/np.sqrt(correct_shridge), 
+            np.mean(store_est_sep2_shridge)-test_degree, np.std(store_est_sep2_shridge)/np.sqrt(correct_shridge), 
+            np.mean(store_est_sep3_shridge)-test_degree, np.std(store_est_sep3_shridge)/np.sqrt(correct_shridge),
+            np.mean(np.array(store_peak1_err_shridge)**2 + np.array(store_peak2_err_shridge)**2 + np.array(store_peak3_err_shridge)**2)**(0.5)))
 else:
-    print("SHridge: D.R 0, sep1_mean(s.e.) - (-), sep2_mean(s.e.) - (-), sep3_mean(s.e.) - (-)")
+    print("SHridge: D.R 0, Bias.Sep1(s.e.) - (-), Bias.Sep2(s.e.) - (-), Bias.Sep3(s.e.) - (-), RMSAE -")
 
 
-#%
+#%%
 bjs_mean =  np.mean(store_est_fod_bjs, axis=1)    
 scsd_mean =  np.mean(store_est_fod_superCSD, axis=1)   
 shridge_mean =  np.mean(store_est_fod_shridge, axis=1)

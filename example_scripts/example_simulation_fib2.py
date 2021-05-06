@@ -8,7 +8,7 @@ Purpose: Example for Simulation (2 fiber case)
 #%% Set working directory
 import os
 
-path = 'python script path'
+path = '/your/path/to/BJS/python'
 os.chdir(path)
 
 # import built in Packages
@@ -197,27 +197,27 @@ over_superCSD = len(np.where(store_num_fib_superCSD>2)[0])
 
 
 #show results on screen : add an if to deal with 0% success rate; print the setting as in the tables
-print("J: {}, lmax: {}, lmax_update:{}, SNR:{}, b-value:{}s/mm^2 ".format(J, lmax, lmax_update, 1/sigma, b*1000))
+print("J: {}, lmax: {}, lmax_update:{}, SNR:{}, b-value:{}s/mm^2 ".format(J, lmax, lmax_update, 1/sigma, b))
 if (correct_bjs != 0):
-    print("BJS: D.R {:.2f}, Mean.Sep {:.3f}, RMSAE {:.3f}".format(
-            correct_bjs/rep, np.mean(store_est_sep_bjs), np.std(store_est_sep_bjs)/np.sqrt(correct_bjs),
+    print("BJS: D.R {:.2f}, Bias.Sep {:.3f} ({:.3f}), RMSAE {:.3f}".format(
+            correct_bjs/rep, np.mean(store_est_sep_bjs)-test_degree, np.std(store_est_sep_bjs)/np.sqrt(correct_bjs),
             np.mean(np.array(store_peak1_err_bjs)**2 + np.array(store_peak2_err_bjs)**2)**(0.5)))
 else:
-    print("BJS: D.R 0, Mean.Sep: -, RMSAE: -")
+    print("BJS: D.R 0, Bias.Sep: - (-), RMSAE: -")
 
 if (correct_superCSD != 0):
-    print("superCSD: D.R {:.2f}, Mean.Sep {:.3f}, RMSAE {:.3f}".format(
-            correct_superCSD/rep, np.mean(store_est_sep_superCSD), np.std(store_est_sep_superCSD)/np.sqrt(correct_superCSD),
+    print("superCSD: D.R {:.2f}, Bias.Sep {:.3f} ({:.3f}), RMSAE {:.3f}".format(
+            correct_superCSD/rep, np.mean(store_est_sep_superCSD)-test_degree, np.std(store_est_sep_superCSD)/np.sqrt(correct_superCSD),
             np.mean(np.array(store_peak1_err_superCSD)**2 + np.array(store_peak2_err_superCSD)**2)**(0.5)))
 else:
-    print("superCSD: D.R 0, Mean.Sep: -, RMSAE: -")
+    print("superCSD: D.R 0, Bias.Sep: - (-), RMSAE: -")
     
 if (correct_shridge != 0):
-    print("SHridge: D.R {:.2f}, Mean.Sep {:.3f}, RMSAE {:.3f}".format(
-            correct_shridge/rep, np.mean(store_est_sep_shridge), np.std(store_est_sep_shridge)/np.sqrt(correct_shridge),
+    print("SHridge: D.R {:.2f}, Bias.Sep {:.3f} ({:.3f}), RMSAE {:.3f}".format(
+            correct_shridge/rep, np.mean(store_est_sep_shridge)-test_degree, np.std(store_est_sep_shridge)/np.sqrt(correct_shridge),
             np.mean(np.array(store_peak1_err_shridge)**2 + np.array(store_peak2_err_shridge)**2)**(0.5)))
 else:
-    print("SHridge: D.R 0, Mean.Sep: -, RMSAE: -")
+    print("SHridge: D.R 0, Bias.Sep: - (-), RMSAE: -")
 
 
 #%%

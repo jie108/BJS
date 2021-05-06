@@ -126,7 +126,7 @@ def fib2_sep_angle(true_pos1, true_pos2, est_pos1, est_pos2):
     
     return peak1_error, peak2_error, sep_angle
 
-
+#%%
 def fib3_sep_angle(true_pos1, true_pos2, true_pos3, est_pos1, est_pos2, est_pos3):
 
     fod_temp=[true_pos1, true_pos2, true_pos3]
@@ -162,7 +162,7 @@ def fib3_sep_angle(true_pos1, true_pos2, true_pos3, est_pos1, est_pos2, est_pos3
     
     angles=[ang111,ang222,ang333]
 
-    index_temp = angles.index(min(angles))
+    index_temp = angles.index(np.min(angles))
     
     if(np.dot(fod_temp[fod_loc[index_temp]],est_pos1)<0):
         est_pos1 = -est_pos1
@@ -172,15 +172,18 @@ def fib3_sep_angle(true_pos1, true_pos2, true_pos3, est_pos1, est_pos2, est_pos3
     if(fod_loc[index_temp] == 0):# phi1 phi2 theta1 theta2 store
         phi1 = phi_temp
         theta1 = theta_temp
-        peak1_error = min(angles) # peak 1 error
+        peak1_error = np.min(angles) # peak 1 error
+        sep1_angle = sep_angle1
     elif(fod_loc[index_temp] == 1):
         phi2 = phi_temp
         theta2 = theta_temp
-        peak2_error = min(angles) # peak 2 error
+        peak2_error = np.min(angles) # peak 2 error
+        sep2_angle = sep_angle2
     else:
         phi3 = phi_temp
         theta3 = theta_temp
-        peak3_error = min(angles) # peak 3 error               
+        peak3_error = np.min(angles) # peak 3 error
+        sep3_angle = sep_angle3            
 
     del fod_loc[index_temp]
 
@@ -194,7 +197,7 @@ def fib3_sep_angle(true_pos1, true_pos2, true_pos3, est_pos1, est_pos2, est_pos3
 
     angles=[ang111,ang222]
 
-    index_temp= angles.index(min(angles))
+    index_temp= angles.index(np.min(angles))
     
     if(np.dot(fod_temp[fod_loc[index_temp]],est_pos2)<0):
         est_pos2 = -est_pos2
@@ -204,15 +207,18 @@ def fib3_sep_angle(true_pos1, true_pos2, true_pos3, est_pos1, est_pos2, est_pos3
     if(fod_loc[index_temp] == 0):# phi1 phi2 theta1 theta2 store
         phi1 = phi_temp
         theta1 = theta_temp
-        peak1_error = min(angles) # peak 1 error
+        peak1_error = np.min(angles) # peak 1 error
+        sep1_angle = sep_angle1
     elif(fod_loc[index_temp] == 1):
         phi2 = phi_temp
         theta2 = theta_temp
-        peak2_error = min(angles) # peak 2 error
+        peak2_error = np.min(angles) # peak 2 error
+        sep2_angle = sep_angle2
     else:
         phi3 = phi_temp
         theta3 = theta_temp
-        peak3_error = min(angles) # peak 3 error               
+        peak3_error = np.min(angles) # peak 3 error 
+        sep3_angle = sep_angle3              
 
     del fod_loc[index_temp]
 
@@ -225,21 +231,112 @@ def fib3_sep_angle(true_pos1, true_pos2, true_pos3, est_pos1, est_pos2, est_pos3
 
     theta_temp, phi_temp = cart2sph(est_pos3[0], est_pos3[1], est_pos3[2])
     
-    if(fod_loc == 0):# phi1 phi2 theta1 theta2 store
+    if(fod_loc[0] == 0):# phi1 phi2 theta1 theta2 store
         phi1 = phi_temp
         theta1 = theta_temp
-        peak1_error = min(angles) # peak 1 error
-    elif(fod_loc == 1):
+        peak1_error = np.min(angles) # peak 1 error
+        sep1_angle = sep_angle1
+    elif(fod_loc[0] == 1):
         phi2 = phi_temp
         theta2 = theta_temp
-        peak2_error = min(angles) # peak 2 error
+        peak2_error = np.min(angles) # peak 2 error
+        sep2_angle = sep_angle2
     else:
         phi3 = phi_temp
         theta3 = theta_temp
-        peak3_error = min(angles) # peak 3 error               
+        peak3_error = np.min(angles) # peak 3 error
+        sep3_angle = sep_angle3             
 
-    sep_angle1 = sep_angle1 * 180 / np.pi
-    sep_angle2 = sep_angle2 * 180 / np.pi
-    sep_angle3 = sep_angle3 * 180 / np.pi
+    peak1_error = peak1_error * 180 / np.pi
+    peak2_error = peak2_error * 180 / np.pi
+    peak3_error = peak3_error * 180 / np.pi
 
-    return sep_angle1, sep_angle2, sep_angle3
+    sep1_angle = sep1_angle * 180 / np.pi
+    sep2_angle = sep2_angle * 180 / np.pi
+    sep3_angle = sep3_angle * 180 / np.pi
+
+    return sep1_angle, sep2_angle, sep3_angle, peak1_error, peak2_error, peak3_error
+
+
+#%% From NARM project
+def region3D(n, theta, phi, b, ratio, lmax, r = 0.6, sigma = 0.05, seed = 0):
+
+    r_mesh = np.linspace(1./(2*n), 1-1./(2*n), n)
+    r_y, r_x, r_z = np.meshgrid(r_mesh, r_mesh, r_mesh)
+
+    # fiber generation schema 1
+    # find plain perpendicular to xy-plain and has pi/4 angle towards x-axis conter-clockwisely, 
+    # and point (x,y,z) is on it (this plain has width sqrt(2)*(1-|x-y|) and height 1)
+    # 2D coordinates of point (x,y,z) on this plain is (sqrt(2)*min(x,y), z)
+    # extend this plain to have width 1 and height 1, then 2D coordinates become (min(x,y)/(1-|x-y|),z) = (tx,ty)
+    # in this extended plain, set bottom right vertex as center, and draw 1/4 circle with radius 1 and r
+    # points being selected in this extended plain should satisfy:
+    # lower edge of its square should be lower than intersection between radius-1 circle and right edge of its square
+    # i.e., ty-0.05<sqrt(1^2-(1-(tx+0.05))^2)
+    # upper edge of its square should be higher than intersection between radius-r circle and left edge of its square
+    # i.e., ty+0.05>sqrt(r^2-(1-(tx-0.05))^2)
+    r_xy_1 = np.minimum(r_x, r_y)/(1-np.abs(r_x-r_y))
+    fib_indi_1 = ((1-(r_xy_1+0.05))**2+(r_z-0.05)**2 < 1) & ((1-(r_xy_1-0.05))**2+(r_z+0.05)**2 > r**2)
+    # fiber generation schema 2
+    # find plain perpendicular to xy-plain and has pi*3/4 angle towards x-axis conter-clockwisely, 
+    # and point (x,y,z) is on it (this plain has width sqrt(2)*min(2-x-y,x+y) and height 1)
+    # 2D coordinates of point (x,y,z) on this plain is (sqrt(2)*min(x,1-y), z)
+    # extend this plain to have width 1 and height 1, then 2D coordinates become (min(x,1-y)/min(2-x-y,x+y),z) = (tx,ty)
+    # in this extended plain, set bottom left vertex as center, and draw 1/4 circle with radius 1 and r
+    # points being selected in this extended plain should satisfy:
+    # lower edge of its square should be lower than intersection between radius-1 circle and left edge of its square
+    # i.e., ty-0.05<sqrt(1^2-(tx-0.05)^2)
+    # upper edge of its square should be higher than intersection between radius-r circle and right edge of its square
+    # i.e., ty+0.05>sqrt(r^2-(tx+0.05)^2)
+    r_xy_2 = np.minimum(r_x, 1-r_y)/np.minimum(2-r_x-r_y, r_x+r_y)
+    fib_indi_2 = ((r_xy_2-0.05)**2+(r_z-0.05)**2 < 1) & ((r_xy_2+0.05)**2+(r_z+0.05)**2 > r**2)
+
+    # fib_indi[i,j]=0: voxel_ij contains no fibers
+    # fib_indi[i,j]=1: voxel_ij contains fiber generated from schema 1
+    # fib_indi[i,j]=2: voxel_ij contains fiber generated from schema 2
+    # fib_indi[i,j]=3: voxel_ij contains fibers generated from schema 1 and schema 2 (crossing fibers)
+    # simulation region plot can be obtained by rotating fib_indi 90 degree conter-clockwisely
+    fib_indi = fib_indi_1 + 2*fib_indi_2
+
+    # spherical coordinates of fiber directions in each voxel
+    # coordinate system here is within each voxel, with x-axis perpendicular to the screen, 
+    # and is different from coordinate system for generating fibers voxelwisely in simulation region
+    theta_fib_1 = np.arctan2(r_xy_1, 1-r_z)  # polar angle of fiber 1
+    theta_fib_2 = np.arctan2(r_xy_2, r_z)+np.pi/2 # polar angle of fiber 2
+    theta_fib = np.stack((theta_fib_1, theta_fib_2), axis=-1)
+    phi_fib_1 = np.ones((n, n, n))*0.75*np.pi  # azimuthal angle of fiber 1
+    phi_fib_2 = np.ones((n, n, n))*0.25*np.pi  # azimuthal angle of fiber 2
+    phi_fib = np.stack((phi_fib_1, phi_fib_2), axis=-1)
+
+    # calculate noiseless DWI, DWI (with Rician noise) and SH coefficients of dirac functions
+    DWI_noiseless = np.zeros((n, n, n, len(theta)))
+    SH_coef = np.zeros((n, n, n, int((lmax+1)*(lmax+2)/2)))
+    for i in range(n):
+        for j in range(n):
+            for k in range(n):
+                if fib_indi[i, j, k] == 0:
+                    DWI_noiseless[i, j, k] = np.exp(-b)  # D becomes identity matrix in single tensor model
+                    SH_coef[i, j, k, 0] = spharmonic_eval(0, 0, 0, 0).real
+                elif fib_indi[i, j, k] == 1:
+                    for l in range(len(theta)):
+                        DWI_1 = single_tensor(b, ratio, theta_fib[i, j, k, 0], phi_fib[i, j, k, 0], theta[l], phi[l])
+                        DWI_noiseless[i, j, k, l] = DWI_1
+                    SH_coef[i, j, k] = spharmonic(theta_fib[i, j, k, :1], phi_fib[i, j, k, :1], lmax)
+                elif fib_indi[i, j, k] == 2:
+                    for l in range(len(theta)):
+                        DWI_2 = single_tensor(b, ratio, theta_fib[i, j, k, 1], phi_fib[i, j, k, 1], theta[l], phi[l])
+                        DWI_noiseless[i, j, k, l] = DWI_2
+                    SH_coef[i, j, k] = spharmonic(theta_fib[i, j, k, 1:], phi_fib[i, j, k, 1:], lmax)
+                else:  # crossing-fiber case
+                    for l in range(len(theta)):
+                        DWI_1 = single_tensor(b, ratio, theta_fib[i, j, k, 0], phi_fib[i, j, k, 0], theta[l], phi[l])
+                        DWI_2 = single_tensor(b, ratio, theta_fib[i, j, k, 1], phi_fib[i, j, k, 1], theta[l], phi[l])
+                        DWI_noiseless[i, j, k, l] = (DWI_1+DWI_2)/2  # volumn fractions for two fibers are both 0.5
+                    SH_coef[i, j, k] = (spharmonic(theta_fib[i, j, k, :1], phi_fib[i, j, k, :1], lmax) 
+                        + spharmonic(theta_fib[i, j, k, 1:], phi_fib[i, j, k, 1:], lmax))/2
+    DWI = Rician_noise(DWI_noiseless, sigma, seed)
+    # take upper half of simulation region
+    DWI_noiseless, DWI, SH_coef = DWI_noiseless[:, :, int(n/2):], DWI[:, :, int(n/2):], SH_coef[:, :, int(n/2):]
+    theta_fib, phi_fib, fib_indi = theta_fib[:, :, int(n/2):], phi_fib[:, :, int(n/2):], fib_indi[:, :, int(n/2):]
+
+    return DWI_noiseless, DWI, SH_coef, theta_fib, phi_fib, fib_indi
