@@ -3,6 +3,8 @@ Codebase and Software Requirements
 
 ##### Maintainer: Seungyong Hwang (<a href="mailto:syhwang@ucdavis.edu" class="email">syhwang@ucdavis.edu</a>)
 
+##### Reference: <a href="https://arxiv.org/pdf/2004.04258.pdf" class="uri">https://arxiv.org/pdf/2004.04258.pdf</a>
+
 ### Codebase descriptions
 
 Codebase is maintained in the [**git
