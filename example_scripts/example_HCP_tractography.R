@@ -43,7 +43,7 @@ tracts <- v.track(v.obj,  max.line=500, elim.thres=10)
 
 ###Streamline Selection based on predefined streamline selection masks
 
-rmap = temp$rmap
+rmap = v.obj$rmap
 
 seed = rmap[as.vector(peak_result$seed)]
 target = rmap[as.vector(peak_result$target)]
