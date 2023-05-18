@@ -1,5 +1,5 @@
 import os
-path = '/your/path/to/BJS/python/'
+path = '/Users/seungyong/Dropbox/FDD_estimation/codes/BJS/python/'
 os.chdir(path)
 
 #%%
@@ -21,21 +21,18 @@ from fod_estimation import *
 from dwi_simulation import *
 
 #%%
-data_path = '/your/path/to/BJS/data/'
+data_path = '/Users/seungyong/Dropbox/FDD_estimation/codes/BJS/data/'
 
 #%% Load dwi image and gradient directions and bvalues information : load image takes time
 org_bvecs = np.loadtxt(data_path+'bvecs')  # gradient directions along which DWI signals are measured
 org_bvals = np.loadtxt(data_path+'bvals')  # b-values
 
 #dmri_all = nib.load(data_path+'data.nii.gz').get_data().astype('float64')  # load DWI image: this the FLIRT registered image on the template 
-#dmri_all = dmri_all[::-1]  # flip img_data_raw left-right to make the loaded image consistent with image loaded in matlab by the NIfTI package 
 
 wm_mask_all = nib.load(data_path + 'T1w_acpc_dc_restore_1.25_brain_pve_2.nii.gz').get_data().astype('float64')
-wm_mask_all = wm_mask_all[::-1] # do the same flipping
 wm_mask_all = (wm_mask_all>0).astype('int')
 
 roi_mask_all = nib.load(data_path + 'SLF_L_org.nii.gz').get_data().astype('float64') # get the mask for a ROI: mask created in FSL on the native space 
-roi_mask_all = roi_mask_all[::-1] # do the same flipping
 roi_mask_all = (roi_mask_all>0).astype('int')
 
 wm_roi_mask = roi_mask_all * wm_mask_all
@@ -55,11 +52,9 @@ wm_roi = wm_roi_mask[np.ix_(x_pre, y_pre, z_pre)]
 img_data=nib.load(data_path+'SLF_L_data.nii.gz').get_data().astype('float64')
 #%% Index for streamline selection masks
 seed_img = nib.load(data_path + 'SLF_L_seed_org.nii.gz').get_data().astype('float64')
-seed_img = seed_img[::-1]
 seed_img = (seed_img>0).astype('int')
 
 target_img = nib.load(data_path + 'SLF_L_target_org.nii.gz').get_data().astype('float64')
-target_img = target_img[::-1]
 target_img = (target_img>0).astype('int')
 
 seed_img, target_img = seed_img[np.ix_(x_pre, y_pre, z_pre)], target_img[np.ix_(x_pre, y_pre, z_pre)]
