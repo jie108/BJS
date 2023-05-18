@@ -8,7 +8,7 @@ library(R.matlab)
 library(dmri.tracking)
 library(rgl)
 
-data_path = '/Users/seungyong/Dropbox/FDD_estimation/codes/BJS/data/'
+data_path = '/path/to/BJS/data/'
 ##load peak detection results from "example_HCP.py"
 file_name= paste0(data_path,"peak.mat")
 peak_result= readMat(file_name) #read matlab data into R

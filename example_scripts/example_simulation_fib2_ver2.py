@@ -9,8 +9,7 @@ Purpose: Example for Simulation (2 fiber case)
 import os
 
 #path = 'python script path'
-#path= 'C:/Users/Jie/Dropbox/Projects/CRCNS_projects_2015_/SeungyongHwang_FDD_estimation/codes/BJS/python'
-path = '/Users/seungyong/Dropbox/FDD_estimation/codes/BJS/python'
+path = '/Upath/to/BJS/python'
 os.chdir(path)
 
 # import built in Packages

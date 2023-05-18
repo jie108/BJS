@@ -8,8 +8,8 @@ Purpose: Example for Simulation (2 fiber case)
 #%% Set working directory
 import os
 
-path = 'python script path'
-path = '/Users/seungyong/Dropbox/FDD_estimation/codes/BJS/python'
+#path = 'python script path'
+path = '/path/to/BJS/python'
 
 os.chdir(path)
 
