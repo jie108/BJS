@@ -3,7 +3,7 @@ Codebase and Software Requirements
 
 ##### Maintainer: Seungyong Hwang (<a href="mailto:syhwang@ucdavis.edu" class="email">syhwang@ucdavis.edu</a>)
 
-##### Reference: <a href="https://arxiv.org/pdf/2004.04258.pdf" class="uri">https://arxiv.org/pdf/2004.04258.pdf</a>
+##### Reference: <a href="http://dx.doi.org/10.1214/23-AOAS1781" class="uri">http://dx.doi.org/10.1214/23-AOAS1781</a>
 
 ### Codebase descriptions
 
