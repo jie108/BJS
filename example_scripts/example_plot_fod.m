@@ -2,8 +2,8 @@ clear all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Set path
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-module_path='/Users/seungyong/Dropbox/FDD_estimation/codes/BJS/matlab/fod_plotting';
-data_path='/Users/seungyong/Dropbox/FDD_estimation/codes/BJS/data/';
+module_path='/path/to/BJS/matlab/fod_plotting';
+data_path='/path/to/BJS/data/';
 
 %%% add path of folders (set of fod plotting functions)
 addpath(module_path);

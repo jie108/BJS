@@ -1,11 +1,15 @@
 """
-Purpose: Example for Simulation (3 fiber case)
+Purpose: Example for Simulation (2 fiber case)
 @author: Seungyong (30 Jan 2020)
 """
+
+#%% Setup 
+
 #%% Set working directory
 import os
 
-path = '/your/path/to/BJS/python'
+#path = 'python script path'
+path = '/path/to/BJS/python'
 
 os.chdir(path)
 
@@ -44,7 +48,7 @@ lmax_update = 12 #the maximum level of real symmetrized spherical harmonic basis
 rep=100 
 
 
-#%% Generate Design Matrix and DWI data 
+#% Generate Design Matrix and DWI data 
 #sample the gradient directions
 pos, theta, phi, sampling_index = spmesh(J = J, half = True) # cartesian coordinates and spherical coordinates)on the sphere (equi_angle grid)
 
@@ -75,7 +79,7 @@ for i in range(rep):
     dwi[:,i] = Rician_noise(dwi_noiseless, sigma, seed=i) ##add Rician noise to noiseless DWI signals
 
 
-#%% Generate SH evaluation matrices and True FOD: take a bit of time
+#% Generate SH evaluation matrices and True FOD: take a bit of time
 #generate SH evaluation matrix used in the super-resolution updating step
 pos_dense_half, theta_dense_half, phi_dense_half, sampling_index_dense_half = spmesh(J = 5, half = True) # generate the evaluation grid points on the sphere (equi_angle grid)
 SHD = spharmonic(theta_dense_half, phi_dense_half, lmax_update) # design matrix
@@ -85,7 +89,7 @@ pos_dense, theta_dense, phi_dense = spmesh(J = 5, half = False) # generate the l
 SHP = spharmonic(theta_dense, phi_dense, lmax_update) # 
 
 
-#%% Parameters for methods 
+#% Parameters for methods 
 # Tuning parameter grid for SHRidge: equally spaced on log scale on the coarseer grid, linearly equally spaced within the sub-intervals
 lam = np.array([np.linspace(1e-06,1e-05,21)[:20],
             np.linspace(1e-05,1e-04,21)[:20],
@@ -104,7 +108,7 @@ degree = 5 #clustering peaks within "degree" as one
 peak_cut = 4 # maximum number of peaks: only return the top "peak_cut" peaks  
 
 
-#%% Auxiliary components of the methods:
+#% Auxiliary components of the methods:
 # BJS: generate the associated eigenvalues of each block of the covariance matrix used in BJS estimator definition
 L = int((lmax+1)*(lmax+2)/2) #the number of SH basis used by the methods 
 SH_init = SH[:,:L]
@@ -121,8 +125,8 @@ for i in range(dis.shape[0]):
     idx[i, :] = np.argsort(-dis[i, :])
     
     
-#%% Apply the methods to the simulated DWI data
-# array to store results 
+#% Apply the methods to the simulated DWI data
+# arrayes to store results 
 store_est_fod_bjs = np.zeros((SHP.shape[0],rep)) #For FOD estimation
 store_est_fod_shridge = np.zeros((SHP.shape[0],rep))
 store_est_fod_superCSD = np.zeros((SHP.shape[0],rep))
@@ -157,7 +161,7 @@ store_peak1_err_superCSD = []
 store_peak2_err_superCSD = []
 store_peak3_err_superCSD = []
 
-#%% perform estimation 
+#% perform estimation 
 for i in tqdm.tqdm(range(rep), desc="FOD estimation(BJS)"): # ith replicate 
     #BJS
     store_est_fod_bjs[:,i] = BJS(dwi[:,i], SH, SHD, SHP, R, mu1, mu2, muinf, lmax, t=2/4)
@@ -214,7 +218,7 @@ for i in tqdm.tqdm(range(rep), desc="Peak Detection:"):
         store_peak2_err_bjs.append(peak1_err_bjs)
         store_peak3_err_bjs.append(peak1_err_bjs)
 
-#%% Evaluation 
+#% Evaluation 
 #BJS:         
 correct_bjs = len(np.where(store_num_fib_bjs == num_fib)[0]) #percentage of correct peak detection
 under_bjs = len(np.where(store_num_fib_bjs < num_fib)[0])
@@ -234,31 +238,31 @@ over_superCSD = len(np.where(store_num_fib_superCSD > num_fib)[0])
 #show results on screen : add an if to deal with 0% success rate; print the setting as in the tables
 print("J: {}, lmax: {}, lmax_update:{}, SNR:{}, b-value:{}s/mm^2 ".format(J, lmax, lmax_update, 1/sigma, b))
 if (correct_bjs != 0):
-    print("BJS: D.R {:.2f}, Bias.Sep1(s.e.) {:.3f}({:.3f}), Bias.Sep2(s.e.) {:.3f}({:.3f}), Bias.Sep3(s.e.) {:.3f}({:.3f}), RMSAE {:.3f}".format(
+    print("BJS: D.R {:.2f}, sep1_mean(s.e.) {:.3f}({:.3f}), sep2_mean(s.e.) {:.3f}({:.3f}), sep3_mean(s.e.) {:.3f}({:.3f}), RMSAE {:.3f}".format(
             correct_bjs/rep, np.mean(store_est_sep1_bjs)-test_degree, np.std(store_est_sep1_bjs)/np.sqrt(correct_bjs), 
             np.mean(store_est_sep2_bjs)-test_degree, np.std(store_est_sep2_bjs)/np.sqrt(correct_bjs), 
             np.mean(store_est_sep3_bjs)-test_degree, np.std(store_est_sep3_bjs)/np.sqrt(correct_bjs),
             np.mean(np.array(store_peak1_err_bjs)**2 + np.array(store_peak2_err_bjs)**2 + np.array(store_peak3_err_bjs)**2)**(0.5)))
 else:
-    print("BJS: D.R 0, Bias.Sep1(s.e.) - (-), Bias.Sep2(s.e.) - (-), Bias.Sep3(s.e.) - (-), RMSAE -")
+    print("BJS: D.R 0, sep1_mean(s.e.) - (-), sep2_mean(s.e.) - (-), sep3_mean(s.e.) - (-), RMASE -")
     
 if (correct_superCSD != 0):
-    print("superCSD: D.R {:.2f}, Bias.Sep1(s.e.) {:.3f}({:.3f}), Bias.Sep2(s.e.) {:.3f}({:.3f}), Bias.Sep3(s.e.) {:.3f}({:.3f}), RMSAE {:.3f}".format(
+    print("superCSD: D.R {:.2f}, sep1_mean(s.e.) {:.3f}({:.3f}), sep2_mean(s.e.) {:.3f}({:.3f}), sep3_mean(s.e.) {:.3f}({:.3f}), RMSAE {:.3f}".format(
             correct_superCSD/rep, np.mean(store_est_sep1_superCSD)-test_degree, np.std(store_est_sep1_superCSD)/np.sqrt(correct_superCSD), 
             np.mean(store_est_sep2_superCSD)-test_degree, np.std(store_est_sep2_superCSD)/np.sqrt(correct_superCSD), 
             np.mean(store_est_sep3_superCSD)-test_degree, np.std(store_est_sep3_superCSD)/np.sqrt(correct_superCSD),
             np.mean(np.array(store_peak1_err_superCSD)**2 + np.array(store_peak2_err_superCSD)**2 + np.array(store_peak3_err_superCSD)**2)**(0.5)))
 else:
-    print("superCSD: D.R 0, Bias.Sep1(s.e.) - (-), Bias.Sep2(s.e.) - (-), Bias.Sep3(s.e.) - (-), RMSAE -")
+    print("superCSD: D.R 0, sep1_mean(s.e.) - (-), sep2_mean(s.e.) - (-), sep3_mean(s.e.) - (-), RMASE -")
     
 if (correct_shridge != 0):
-    print("SHridge: D.R {:.2f}, Bias.Sep1(s.e.) {:.3f}({:.3f}), Bias.Sep2(s.e.) {:.3f}({:.3f}), Bias.Sep3(s.e.) {:.3f}({:.3f}), RMSAE {:.3f}".format(
+    print("SHridge: D.R {:.2f}, sep1_mean(s.e.) {:.3f}({:.3f}), sep2_mean(s.e.) {:.3f}({:.3f}), sep3_mean(s.e.) {:.3f}({:.3f}), RMSAE {:.3f}".format(
             correct_shridge/rep, np.mean(store_est_sep1_shridge)-test_degree, np.std(store_est_sep1_shridge)/np.sqrt(correct_shridge), 
             np.mean(store_est_sep2_shridge)-test_degree, np.std(store_est_sep2_shridge)/np.sqrt(correct_shridge), 
             np.mean(store_est_sep3_shridge)-test_degree, np.std(store_est_sep3_shridge)/np.sqrt(correct_shridge),
             np.mean(np.array(store_peak1_err_shridge)**2 + np.array(store_peak2_err_shridge)**2 + np.array(store_peak3_err_shridge)**2)**(0.5)))
 else:
-    print("SHridge: D.R 0, Bias.Sep1(s.e.) - (-), Bias.Sep2(s.e.) - (-), Bias.Sep3(s.e.) - (-), RMSAE -")
+    print("SHridge: D.R 0, sep1_mean(s.e.) - (-), sep2_mean(s.e.) - (-), sep3_mean(s.e.) - (-), RMASE -")
 
 
 #%%
