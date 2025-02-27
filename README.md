@@ -1,7 +1,7 @@
 Codebase and Software Requirements
 ----------------------------------
 
-##### Maintainer: Seungyong Hwang (<a href="mailto:syhwang@ucdavis.edu" class="email">syhwang@ucdavis.edu</a>)
+##### Maintainer: Seungyong Hwang (<a href="mailto:syhwang@ucdavis.edu" class="email">syhwang@ucdavis.edu</a>) or contact jiepeng108@gmail.com
 
 ##### Reference: <a href="http://dx.doi.org/10.1214/23-AOAS1781" class="uri">http://dx.doi.org/10.1214/23-AOAS1781</a>
 
